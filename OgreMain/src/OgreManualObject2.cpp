@@ -184,7 +184,7 @@ namespace Ogre {
                 "ManualObject::begin");
         }
 
-        mCurrentSection = OGRE_NEW ManualObjectSection(this, datablockName, opType);
+        mCurrentSection = OGRE_NEW ManualObjectSection(this, opType);
 
         mCurrentSection->mVaoManager = mManager->getDestinationRenderSystem()->getVaoManager();
 
@@ -192,7 +192,7 @@ namespace Ogre {
 
         mSectionList.push_back(mCurrentSection);
 
-        mCurrentDatablockName = datablockName;
+        mCurrentMaterialName = datablockName;
 
         mDeclSize = 0;
 
@@ -206,6 +206,14 @@ namespace Ogre {
         mVertexBuffer = mVertexBufferCursor = mTempVertexBuffer;
         mIndexBuffer = mIndexBufferCursor = mTempIndexBuffer;
     }
+
+    //-----------------------------------------------------------------------------
+    void ManualObject::begin(const String& materialName, const String& groupName, OperationType opType)
+    {
+        begin(materialName, opType);
+        mCurrentResourceGroup = groupName;
+    }
+
     //-----------------------------------------------------------------------------
     void ManualObject::beginUpdate(size_t sectionIndex)
     {
@@ -690,13 +698,14 @@ namespace Ogre {
 
             mCurrentSection->mVaoPerLod[0].push_back(mCurrentSection->mVao);
             mCurrentSection->mVaoPerLod[1].push_back(mCurrentSection->mVao);
-            mCurrentSection->setDatablock(mCurrentDatablockName);
+            mCurrentSection->setDatablockOrMaterialName(mCurrentMaterialName, mCurrentResourceGroup);
 
             mRenderables.push_back(mCurrentSection);
 
             resetBuffers();
 
-            mCurrentDatablockName.clear();
+            mCurrentMaterialName.clear();
+            mCurrentResourceGroup.clear();
         }
         else
         {
@@ -869,8 +878,7 @@ namespace Ogre {
         mVaoPerLod[1].clear();
     }
     //-----------------------------------------------------------------------------
-    ManualObject::ManualObjectSection::ManualObjectSection(ManualObject* parent,
-        const String& datablockName, OperationType opType)
+    ManualObject::ManualObjectSection::ManualObjectSection(ManualObject* parent, OperationType opType)
         : mParent(parent), mVao(0), mOperationType(opType), m32BitIndices(false)
     {
 
